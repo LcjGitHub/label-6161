@@ -15,6 +15,8 @@ class StairsBase(BaseModel):
     difficulty: str = Field(default="中等", description="难度等级：简单/中等/困难")
     is_public: bool = Field(default=True, description="是否公开")
     notes: str = Field(default="", description="备注")
+    longitude: float | None = Field(default=None, ge=-180, le=180, description="经度")
+    latitude: float | None = Field(default=None, ge=-90, le=90, description="纬度")
 
     @field_validator("difficulty")
     @classmethod
@@ -38,6 +40,8 @@ class StairsUpdate(BaseModel):
     difficulty: str | None = None
     is_public: bool | None = None
     notes: str | None = None
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
 
     @field_validator("difficulty")
     @classmethod

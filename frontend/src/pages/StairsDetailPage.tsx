@@ -9,6 +9,7 @@ import {
   FormLabel,
   Heading,
   HStack,
+  IconButton,
   Input,
   Spinner,
   Text,
@@ -258,6 +259,44 @@ export default function StairsDetailPage() {
           <Badge colorScheme={getDifficultyColor(item.difficulty)} fontSize="md">
             {item.difficulty}
           </Badge>
+        </HStack>
+        <HStack>
+          <Text fontWeight="semibold" minW="100px">
+            经度
+          </Text>
+          <Text>{item.longitude != null ? item.longitude : "—"}</Text>
+          {item.longitude != null && (
+            <IconButton
+              size="xs"
+              aria-label="复制经度"
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard.writeText(String(item.longitude));
+                toast({ title: "已复制经度", status: "success", duration: 1500 });
+              }}
+            >
+              📋
+            </IconButton>
+          )}
+        </HStack>
+        <HStack>
+          <Text fontWeight="semibold" minW="100px">
+            纬度
+          </Text>
+          <Text>{item.latitude != null ? item.latitude : "—"}</Text>
+          {item.latitude != null && (
+            <IconButton
+              size="xs"
+              aria-label="复制纬度"
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard.writeText(String(item.latitude));
+                toast({ title: "已复制纬度", status: "success", duration: 1500 });
+              }}
+            >
+              📋
+            </IconButton>
+          )}
         </HStack>
         <Box>
           <Text fontWeight="semibold" mb={1}>

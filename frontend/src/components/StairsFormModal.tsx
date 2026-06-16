@@ -41,6 +41,8 @@ const defaultValues: StairsFormData = {
   difficulty: "中等",
   is_public: true,
   notes: "",
+  longitude: null,
+  latitude: null,
 };
 
 /**
@@ -77,6 +79,8 @@ export default function StairsFormModal({
               difficulty: initial.difficulty,
               is_public: initial.is_public,
               notes: initial.notes,
+              longitude: initial.longitude,
+              latitude: initial.latitude,
             }
           : defaultValues,
       );
@@ -167,6 +171,66 @@ export default function StairsFormModal({
               </FormControl>
             )}
           />
+
+          <HStack align="flex-start">
+            <FormControl isInvalid={Boolean(errors.longitude)}>
+              <FormLabel>经度</FormLabel>
+              <NumberInput
+                min={-180}
+                max={180}
+                step={0.0001}
+                value={watch("longitude") ?? ""}
+                onChange={(_, val) => {
+                  if (isNaN(val)) {
+                    setValue("longitude", null);
+                  } else {
+                    setValue("longitude", val);
+                  }
+                }}
+              >
+                <NumberInputField
+                  {...register("longitude", {
+                    setValueAs: (v: unknown) =>
+                      v === "" || v === null || v === undefined
+                        ? null
+                        : Number(v),
+                    min: { value: -180, message: "经度范围为 -180 ~ 180" },
+                    max: { value: 180, message: "经度范围为 -180 ~ 180" },
+                  })}
+                />
+              </NumberInput>
+              <FormErrorMessage>{errors.longitude?.message}</FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={Boolean(errors.latitude)}>
+              <FormLabel>纬度</FormLabel>
+              <NumberInput
+                min={-90}
+                max={90}
+                step={0.0001}
+                value={watch("latitude") ?? ""}
+                onChange={(_, val) => {
+                  if (isNaN(val)) {
+                    setValue("latitude", null);
+                  } else {
+                    setValue("latitude", val);
+                  }
+                }}
+              >
+                <NumberInputField
+                  {...register("latitude", {
+                    setValueAs: (v: unknown) =>
+                      v === "" || v === null || v === undefined
+                        ? null
+                        : Number(v),
+                    min: { value: -90, message: "纬度范围为 -90 ~ 90" },
+                    max: { value: 90, message: "纬度范围为 -90 ~ 90" },
+                  })}
+                />
+              </NumberInput>
+              <FormErrorMessage>{errors.latitude?.message}</FormErrorMessage>
+            </FormControl>
+          </HStack>
 
           <FormControl display="flex" alignItems="center">
             <FormLabel mb={0}>是否公开</FormLabel>

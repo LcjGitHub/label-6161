@@ -11,6 +11,8 @@ export interface Stairs {
   difficulty: Difficulty;
   is_public: boolean;
   notes: string;
+  longitude: number | null;
+  latitude: number | null;
 }
 
 export interface StairsFormData {
@@ -21,6 +23,8 @@ export interface StairsFormData {
   difficulty: Difficulty;
   is_public: boolean;
   notes: string;
+  longitude: number | null;
+  latitude: number | null;
 }
 
 export interface Checkin {

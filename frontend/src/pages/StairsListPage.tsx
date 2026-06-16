@@ -107,6 +107,7 @@ export default function StairsListPage() {
                 <Th isNumeric>级数</Th>
                 <Th isNumeric>预估高度(m)</Th>
                 <Th>难度</Th>
+                <Th>坐标</Th>
                 <Th>是否公开</Th>
                 <Th>操作</Th>
               </Tr>
@@ -122,6 +123,11 @@ export default function StairsListPage() {
                     <Badge colorScheme={getDifficultyColor(item.difficulty)}>
                       {item.difficulty}
                     </Badge>
+                  </Td>
+                  <Td fontSize="sm" color="gray.600">
+                    {item.longitude != null && item.latitude != null
+                      ? `${item.longitude}, ${item.latitude}`
+                      : "—"}
                   </Td>
                   <Td>
                     <Badge colorScheme={item.is_public ? "green" : "orange"}>

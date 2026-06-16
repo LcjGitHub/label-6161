@@ -13,6 +13,8 @@ SEED_DATA: list[StairsCreate] = [
         difficulty="困难",
         is_public=True,
         notes="长江与嘉陵江交汇处，经典城市台阶打卡点。",
+        longitude=106.5828,
+        latitude=29.5628,
     ),
     StairsCreate(
         name="十八梯",
@@ -22,6 +24,8 @@ SEED_DATA: list[StairsCreate] = [
         difficulty="中等",
         is_public=True,
         notes="老重庆风貌街区，阶梯串联上下半城。",
+        longitude=106.5774,
+        latitude=29.5534,
     ),
     StairsCreate(
         name="武康路阶梯",
@@ -31,6 +35,8 @@ SEED_DATA: list[StairsCreate] = [
         difficulty="简单",
         is_public=True,
         notes="法租界区域，梧桐树下的文艺台阶。",
+        longitude=121.4404,
+        latitude=31.2045,
     ),
     StairsCreate(
         name="鼓浪屿钢琴博物馆台阶",
@@ -40,6 +46,8 @@ SEED_DATA: list[StairsCreate] = [
         difficulty="中等",
         is_public=False,
         notes="内部参观路线，需预约进入。",
+        longitude=118.0687,
+        latitude=24.4487,
     ),
     StairsCreate(
         name="宽窄巷子北口阶梯",
@@ -49,6 +57,8 @@ SEED_DATA: list[StairsCreate] = [
         difficulty="简单",
         is_public=True,
         notes="连接宽窄巷子与周边街区的公共台阶。",
+        longitude=104.0554,
+        latitude=30.6698,
     ),
 ]
 
