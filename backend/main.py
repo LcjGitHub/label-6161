@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import get_connection, init_db
-from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats
+from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats, FavoriteCreate, FavoriteOut, FavoriteWithStairs
 from seed import seed_if_empty
 
 
@@ -23,7 +23,7 @@ app = FastAPI(title="城市台阶打卡点 API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3101", "http://127.0.0.1:3101"],
+    allow_origins=["http://localhost:3101", "http://127.0.0.1:3101", "http://localhost:3102", "http://127.0.0.1:3102"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -107,3 +107,45 @@ def read_stats():
     """获取台阶数据统计概览。"""
     with get_connection() as conn:
         return crud.get_stairs_stats(conn)
+
+
+@app.get("/api/favorites", response_model=list[FavoriteWithStairs])
+def read_favorites():
+    """获取全部收藏列表（含台阶详情）。"""
+    with get_connection() as conn:
+        return crud.list_favorites(conn)
+
+
+@app.get("/api/stairs/{stairs_id}/favorite", response_model=FavoriteOut | None)
+def read_favorite_status(stairs_id: int):
+    """查询指定台阶是否已收藏。"""
+    with get_connection() as conn:
+        stairs = crud.get_stairs(conn, stairs_id)
+    if not stairs:
+        raise HTTPException(status_code=404, detail="台阶打卡点不存在")
+    with get_connection() as conn:
+        return crud.get_favorite_by_stairs_id(conn, stairs_id)
+
+
+@app.post("/api/favorites", response_model=FavoriteOut, status_code=201)
+def create_favorite(data: FavoriteCreate):
+    """添加收藏。"""
+    with get_connection() as conn:
+        stairs = crud.get_stairs(conn, data.stairs_id)
+    if not stairs:
+        raise HTTPException(status_code=404, detail="关联台阶不存在")
+    with get_connection() as conn:
+        existing = crud.get_favorite_by_stairs_id(conn, data.stairs_id)
+    if existing:
+        raise HTTPException(status_code=400, detail="该台阶已被收藏")
+    with get_connection() as conn:
+        return crud.create_favorite(conn, data)
+
+
+@app.delete("/api/favorites/{stairs_id}", status_code=204)
+def delete_favorite(stairs_id: int):
+    """取消收藏。"""
+    with get_connection() as conn:
+        ok = crud.delete_favorite(conn, stairs_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="该台阶未被收藏")

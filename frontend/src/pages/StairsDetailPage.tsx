@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin } from "../api/stairs";
+import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchFavoriteStatus, createFavorite, deleteFavorite } from "../api/stairs";
 import StairsFormModal from "../components/StairsFormModal";
 import type { Stairs, Checkin, CheckinFormData } from "../types/stairs";
 
@@ -39,6 +39,8 @@ export default function StairsDetailPage() {
     feeling: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   const formatDateTime = (raw: string): string => {
     if (!raw) return raw;
@@ -87,10 +89,45 @@ export default function StairsDetailPage() {
     }
   }, [id, toast]);
 
+  const loadFavoriteStatus = useCallback(async () => {
+    if (!id) return;
+    try {
+      const data = await fetchFavoriteStatus(Number(id));
+      setIsFavorited(!!data);
+    } catch {
+      setIsFavorited(false);
+    }
+  }, [id]);
+
+  const handleFavoriteToggle = async () => {
+    if (!id || !item) return;
+    setFavoriteLoading(true);
+    try {
+      if (isFavorited) {
+        await deleteFavorite(Number(id));
+        setIsFavorited(false);
+        toast({ title: "已取消收藏", status: "success", duration: 2000 });
+      } else {
+        await createFavorite(Number(id));
+        setIsFavorited(true);
+        toast({ title: "收藏成功", status: "success", duration: 2000 });
+      }
+    } catch {
+      toast({
+        title: isFavorited ? "取消收藏失败" : "收藏失败",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadDetail();
     loadCheckins();
-  }, [loadDetail, loadCheckins]);
+    loadFavoriteStatus();
+  }, [loadDetail, loadCheckins, loadFavoriteStatus]);
 
   useEffect(() => {
     if (id) {
@@ -153,7 +190,23 @@ export default function StairsDetailPage() {
   return (
     <Box bg="white" p={6} borderRadius="md" shadow="sm">
       <HStack justify="space-between" mb={4} flexWrap="wrap" gap={3}>
-        <Heading size="lg">{item.name}</Heading>
+        <HStack gap={3}>
+          <Heading size="lg">{item.name}</Heading>
+          <Button
+            size="sm"
+            colorScheme={isFavorited ? "pink" : "gray"}
+            variant={isFavorited ? "solid" : "outline"}
+            onClick={handleFavoriteToggle}
+            isLoading={favoriteLoading}
+            leftIcon={
+              <Text as="span" fontSize="lg">
+                {isFavorited ? "♥" : "♡"}
+              </Text>
+            }
+          >
+            {isFavorited ? "已收藏" : "收藏"}
+          </Button>
+        </HStack>
         <Badge
           fontSize="sm"
           px={3}

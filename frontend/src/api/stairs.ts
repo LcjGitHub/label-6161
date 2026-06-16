@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Stairs, StairsFormData, Checkin, CheckinFormData, StairsStats } from "../types/stairs";
+import type { Stairs, StairsFormData, Checkin, CheckinFormData, StairsStats, Favorite, FavoriteWithStairs } from "../types/stairs";
 
 const api = axios.create({
   baseURL: "/api",
@@ -74,4 +74,36 @@ export async function createCheckin(payload: CheckinFormData): Promise<Checkin> 
 export async function fetchStats(): Promise<StairsStats> {
   const { data } = await api.get<StairsStats>("/stats");
   return data;
+}
+
+/** 获取全部收藏列表（含台阶详情） */
+export async function fetchFavorites(): Promise<FavoriteWithStairs[]> {
+  const { data } = await api.get<FavoriteWithStairs[]>("/favorites");
+  return data;
+}
+
+/**
+ * 查询指定台阶是否已收藏
+ * @param stairsId - 台阶编号
+ */
+export async function fetchFavoriteStatus(stairsId: number): Promise<Favorite | null> {
+  const { data } = await api.get<Favorite | null>(`/stairs/${stairsId}/favorite`);
+  return data;
+}
+
+/**
+ * 添加收藏
+ * @param stairsId - 台阶编号
+ */
+export async function createFavorite(stairsId: number): Promise<Favorite> {
+  const { data } = await api.post<Favorite>("/favorites", { stairs_id: stairsId });
+  return data;
+}
+
+/**
+ * 取消收藏
+ * @param stairsId - 台阶编号
+ */
+export async function deleteFavorite(stairsId: number): Promise<void> {
+  await api.delete(`/favorites/${stairsId}`);
 }

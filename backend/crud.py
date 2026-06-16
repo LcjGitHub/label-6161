@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from schemas import StairsCreate, StairsUpdate, CheckinCreate
+from schemas import StairsCreate, StairsUpdate, CheckinCreate, FavoriteCreate
 
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
@@ -187,3 +187,77 @@ def get_stairs_stats(conn: sqlite3.Connection) -> dict:
             {"city": r["city"], "count": r["count"]} for r in city_rows
         ],
     }
+
+
+def _favorite_row_to_dict(row: sqlite3.Row) -> dict:
+    """将收藏记录行转为 API 字典。"""
+    return {
+        "id": row["id"],
+        "stairs_id": row["stairs_id"],
+        "favorite_time": row["favorite_time"],
+    }
+
+
+def list_favorites(conn: sqlite3.Connection) -> list[dict]:
+    """
+     * 查询全部收藏记录（含台阶详情）。
+     * @param {sqlite3.Connection} conn
+     * @returns {list[dict]}
+     """
+    rows = conn.execute(
+        """
+        SELECT f.id AS fav_id, f.stairs_id, f.favorite_time,
+               s.id, s.name, s.city, s.step_count, s.estimated_height, s.is_public, s.notes
+        FROM favorites f
+        JOIN stairs s ON f.stairs_id = s.id
+        ORDER BY f.favorite_time DESC
+        """
+    ).fetchall()
+    return [
+        {
+            "id": r["fav_id"],
+            "stairs_id": r["stairs_id"],
+            "favorite_time": r["favorite_time"],
+            "stairs": _row_to_dict(r),
+        }
+        for r in rows
+    ]
+
+
+def get_favorite_by_stairs_id(conn: sqlite3.Connection, stairs_id: int) -> dict | None:
+    """按台阶编号查询是否已收藏。"""
+    row = conn.execute(
+        "SELECT * FROM favorites WHERE stairs_id = ?",
+        (stairs_id,),
+    ).fetchone()
+    return _favorite_row_to_dict(row) if row else None
+
+
+def create_favorite(conn: sqlite3.Connection, data: FavoriteCreate) -> dict:
+    """新增一条收藏记录。"""
+    from datetime import datetime, timezone
+
+    favorite_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    cursor = conn.execute(
+        """
+        INSERT INTO favorites (stairs_id, favorite_time)
+        VALUES (?, ?)
+        """,
+        (data.stairs_id, favorite_time),
+    )
+    conn.commit()
+    row = conn.execute(
+        "SELECT * FROM favorites WHERE id = ?",
+        (cursor.lastrowid,),
+    ).fetchone()
+    return _favorite_row_to_dict(row)
+
+
+def delete_favorite(conn: sqlite3.Connection, stairs_id: int) -> bool:
+    """取消收藏（按台阶编号删除）。"""
+    cursor = conn.execute(
+        "DELETE FROM favorites WHERE stairs_id = ?",
+        (stairs_id,),
+    )
+    conn.commit()
+    return cursor.rowcount > 0

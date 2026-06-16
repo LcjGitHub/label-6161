@@ -3,6 +3,7 @@ import { Link as RouterLink, Route, Routes, useLocation } from "react-router-dom
 import StairsListPage from "./pages/StairsListPage";
 import StairsDetailPage from "./pages/StairsDetailPage";
 import StatisticsPage from "./pages/StatisticsPage";
+import FavoritesPage from "./pages/FavoritesPage";
 
 function NavLink({
   to,
@@ -35,6 +36,7 @@ export default function App() {
   const location = useLocation();
   const isListActive = location.pathname === "/" || location.pathname.startsWith("/stairs/");
   const isStatsActive = location.pathname === "/statistics";
+  const isFavoritesActive = location.pathname === "/favorites";
 
   return (
     <Box minH="100vh" bg="gray.50">
@@ -48,6 +50,9 @@ export default function App() {
               <NavLink to="/" isActive={isListActive}>
                 打卡点列表
               </NavLink>
+              <NavLink to="/favorites" isActive={isFavoritesActive}>
+                我的收藏
+              </NavLink>
               <NavLink to="/statistics" isActive={isStatsActive}>
                 数据统计
               </NavLink>
@@ -59,6 +64,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<StairsListPage />} />
           <Route path="/stairs/:id" element={<StairsDetailPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/statistics" element={<StatisticsPage />} />
         </Routes>
       </Container>

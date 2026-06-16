@@ -45,3 +45,16 @@ export interface StairsStats {
   total_estimated_height: number;
   city_distribution: CityStairsCount[];
 }
+
+export interface Favorite {
+  id: number;
+  stairs_id: number;
+  favorite_time: string;
+}
+
+export interface FavoriteWithStairs {
+  id: number;
+  stairs_id: number;
+  favorite_time: string;
+  stairs: Stairs;
+}

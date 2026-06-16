@@ -72,3 +72,28 @@ class StairsStats(BaseModel):
     avg_step_count: float = Field(..., description="全部台阶级数平均值")
     total_estimated_height: float = Field(..., description="预估高度合计值（米）")
     city_distribution: list[CityStairsCount] = Field(..., description="各城市台阶数量分布")
+
+
+class FavoriteCreate(BaseModel):
+    """创建收藏记录。"""
+
+    stairs_id: int = Field(..., description="关联台阶编号")
+
+
+class FavoriteOut(BaseModel):
+    """收藏记录响应。"""
+
+    id: int
+    stairs_id: int
+    favorite_time: str
+
+    model_config = {"from_attributes": True}
+
+
+class FavoriteWithStairs(BaseModel):
+    """带台阶详情的收藏记录。"""
+
+    id: int
+    stairs_id: int
+    favorite_time: str
+    stairs: StairsOut
