@@ -58,6 +58,27 @@ cd frontend && npm install && npm run dev
 | POST | `/api/stairs` | 创建 |
 | PUT | `/api/stairs/{id}` | 更新 |
 | DELETE | `/api/stairs/{id}` | 删除 |
+| GET | `/api/stats` | 数据统计概览 |
+
+**统计接口返回值示例**（`GET /api/stats`）：
+
+```json
+{
+  "total_count": 5,
+  "avg_step_count": 182.4,
+  "total_estimated_height": 520.5,
+  "city_distribution": [
+    { "city": "北京", "count": 3 },
+    { "city": "上海", "count": 2 }
+  ]
+}
+```
+
+字段说明：
+- `total_count`：全部台阶总数
+- `avg_step_count`：全部台阶级数平均值
+- `total_estimated_height`：预估高度合计值（米）
+- `city_distribution`：各城市台阶数量分布数组，每项包含 `city`（城市名称）和 `count`（台阶数量）
 
 ## 说明
 

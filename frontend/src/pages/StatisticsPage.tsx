@@ -64,7 +64,7 @@ export default function StatisticsPage() {
     <Box>
       <Heading size="lg" mb={6}>数据统计概览</Heading>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mb={8}>
+      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6} mb={8}>
         <Card bg="teal.50" border="1px" borderColor="teal.200">
           <CardBody>
             <Stat>
@@ -96,46 +96,40 @@ export default function StatisticsPage() {
             </Stat>
           </CardBody>
         </Card>
-
-        <Card bg="orange.50" border="1px" borderColor="orange.200">
-          <CardBody>
-            <Stat>
-              <StatLabel color="orange.700">覆盖城市数</StatLabel>
-              <StatNumber color="orange.600">
-                {stats.city_distribution.length}
-              </StatNumber>
-              <StatHelpText>个城市</StatHelpText>
-            </Stat>
-          </CardBody>
-        </Card>
       </SimpleGrid>
 
       <Heading size="md" mb={4}>各城市台阶数量分布</Heading>
-      <Box overflowX="auto" bg="white" borderRadius="md" shadow="sm">
-        <Table size="md">
-          <Thead bg="gray.100">
-            <Tr>
-              <Th>城市</Th>
-              <Th isNumeric>台阶数量</Th>
-              <Th isNumeric>占比</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {stats.city_distribution.map((item) => {
-              const percentage = stats.total_count > 0
-                ? ((item.count / stats.total_count) * 100).toFixed(1)
-                : "0.0";
-              return (
-                <Tr key={item.city}>
-                  <Td fontWeight="medium">{item.city}</Td>
-                  <Td isNumeric>{item.count}</Td>
-                  <Td isNumeric>{percentage}%</Td>
-                </Tr>
-              );
-            })}
-          </Tbody>
-        </Table>
-      </Box>
+      {stats.city_distribution.length === 0 ? (
+        <Box bg="white" borderRadius="md" shadow="sm" p={8} textAlign="center">
+          <Text color="gray.500">暂无数据</Text>
+        </Box>
+      ) : (
+        <Box overflowX="auto" bg="white" borderRadius="md" shadow="sm">
+          <Table size="md">
+            <Thead bg="gray.100">
+              <Tr>
+                <Th>城市</Th>
+                <Th isNumeric>台阶数量</Th>
+                <Th isNumeric>占比</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {stats.city_distribution.map((item) => {
+                const percentage = stats.total_count > 0
+                  ? ((item.count / stats.total_count) * 100).toFixed(1)
+                  : "0.0";
+                return (
+                  <Tr key={item.city}>
+                    <Td fontWeight="medium">{item.city}</Td>
+                    <Td isNumeric>{item.count}</Td>
+                    <Td isNumeric>{percentage}%</Td>
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+        </Box>
+      )}
     </Box>
   );
 }
