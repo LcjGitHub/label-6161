@@ -11,7 +11,12 @@ import {
   HStack,
   IconButton,
   Input,
+  SimpleGrid,
   Spinner,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
   Text,
   Textarea,
   useDisclosure,
@@ -20,9 +25,9 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchFavoriteStatus, createFavorite, deleteFavorite } from "../api/stairs";
+import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchCheckinSummary, fetchFavoriteStatus, createFavorite, deleteFavorite } from "../api/stairs";
 import StairsFormModal from "../components/StairsFormModal";
-import type { Stairs, Checkin, CheckinFormData } from "../types/stairs";
+import type { Stairs, Checkin, CheckinFormData, CheckinSummary } from "../types/stairs";
 
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
@@ -55,6 +60,8 @@ export default function StairsDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [checkinSummary, setCheckinSummary] = useState<CheckinSummary | null>(null);
+  const [checkinSummaryLoading, setCheckinSummaryLoading] = useState(false);
 
   const formatDateTime = (raw: string): string => {
     if (!raw) return raw;
@@ -113,6 +120,23 @@ export default function StairsDetailPage() {
     }
   }, [id]);
 
+  const loadCheckinSummary = useCallback(async () => {
+    if (!id) return;
+    setCheckinSummaryLoading(true);
+    try {
+      const data = await fetchCheckinSummary(Number(id));
+      setCheckinSummary(data);
+    } catch {
+      toast({
+        title: "加载打卡摘要失败",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setCheckinSummaryLoading(false);
+    }
+  }, [id, toast]);
+
   const handleFavoriteToggle = async () => {
     if (!id || !item) return;
     setFavoriteLoading(true);
@@ -141,7 +165,8 @@ export default function StairsDetailPage() {
     loadDetail();
     loadCheckins();
     loadFavoriteStatus();
-  }, [loadDetail, loadCheckins, loadFavoriteStatus]);
+    loadCheckinSummary();
+  }, [loadDetail, loadCheckins, loadFavoriteStatus, loadCheckinSummary]);
 
   useEffect(() => {
     if (id) {
@@ -164,6 +189,7 @@ export default function StairsDetailPage() {
       toast({ title: "打卡成功", status: "success", duration: 2000 });
       setForm((prev) => ({ ...prev, checkin_time: "", duration_minutes: 1, feeling: "" }));
       loadCheckins();
+      loadCheckinSummary();
     } catch {
       toast({ title: "打卡失败", status: "error", duration: 3000 });
     } finally {
@@ -230,6 +256,42 @@ export default function StairsDetailPage() {
           {item.is_public ? "公开" : "非公开"}
         </Badge>
       </HStack>
+
+      {checkinSummaryLoading ? (
+        <HStack justify="center" py={4} mb={4}>
+          <Spinner size="sm" color="teal.500" />
+          <Text fontSize="sm" color="gray.500">加载打卡摘要…</Text>
+        </HStack>
+      ) : checkinSummary && checkinSummary.total_checkins > 0 ? (
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={6}>
+          <Card bg="teal.50" border="1px" borderColor="teal.200">
+            <CardBody>
+              <Stat>
+                <StatLabel color="teal.700">累计打卡次数</StatLabel>
+                <StatNumber color="teal.600">{checkinSummary.total_checkins}</StatNumber>
+                <StatHelpText>次</StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+          <Card bg="blue.50" border="1px" borderColor="blue.200">
+            <CardBody>
+              <Stat>
+                <StatLabel color="blue.700">最近一次打卡</StatLabel>
+                <StatNumber color="blue.600" fontSize="xl">
+                  {checkinSummary.last_checkin_time ? formatDateTime(checkinSummary.last_checkin_time) : "—"}
+                </StatNumber>
+                <StatHelpText>
+                  {checkinSummary.last_checkin_time ? "" : "暂无打卡记录"}
+                </StatHelpText>
+              </Stat>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
+      ) : (
+        <Box bg="gray.50" borderRadius="md" p={4} mb={6} textAlign="center">
+          <Text color="gray.500" fontSize="sm">暂无打卡记录，快来成为第一个打卡者吧！</Text>
+        </Box>
+      )}
 
       <Divider mb={4} />
 

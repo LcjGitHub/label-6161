@@ -60,6 +60,11 @@ export interface Favorite {
   favorite_time: string;
 }
 
+export interface CheckinSummary {
+  total_checkins: number;
+  last_checkin_time: string | null;
+}
+
 export interface FavoriteWithStairs {
   id: number;
   stairs_id: number;

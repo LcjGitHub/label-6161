@@ -191,6 +191,23 @@ def create_checkin(conn: sqlite3.Connection, data: CheckinCreate) -> dict:
     return _checkin_row_to_dict(row)
 
 
+def get_checkin_summary(conn: sqlite3.Connection, stairs_id: int) -> dict:
+    """按台阶编号统计打卡次数与最近一条记录时间。"""
+    row = conn.execute(
+        """
+        SELECT COUNT(*) AS total_checkins,
+               MAX(checkin_time) AS last_checkin_time
+        FROM checkins
+        WHERE stairs_id = ?
+        """,
+        (stairs_id,),
+    ).fetchone()
+    return {
+        "total_checkins": row["total_checkins"] or 0,
+        "last_checkin_time": row["last_checkin_time"],
+    }
+
+
 def get_stairs_stats(conn: sqlite3.Connection) -> dict:
     """获取台阶数据统计概览。"""
     agg_row = conn.execute(

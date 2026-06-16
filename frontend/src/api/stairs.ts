@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Stairs, StairsFormData, Checkin, CheckinFormData, StairsStats, Favorite, FavoriteWithStairs } from "../types/stairs";
+import type { Stairs, StairsFormData, Checkin, CheckinFormData, StairsStats, CheckinSummary, Favorite, FavoriteWithStairs } from "../types/stairs";
 
 const api = axios.create({
   baseURL: "/api",
@@ -67,6 +67,15 @@ export async function deleteStairs(id: number): Promise<void> {
 
 export async function fetchCheckins(stairsId: number): Promise<Checkin[]> {
   const { data } = await api.get<Checkin[]>(`/stairs/${stairsId}/checkins`);
+  return data;
+}
+
+/**
+ * 获取指定台阶的打卡摘要
+ * @param stairsId - 台阶编号
+ */
+export async function fetchCheckinSummary(stairsId: number): Promise<CheckinSummary> {
+  const { data } = await api.get<CheckinSummary>(`/stairs/${stairsId}/checkin-summary`);
   return data;
 }
 

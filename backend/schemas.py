@@ -112,6 +112,13 @@ class FavoriteOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class CheckinSummary(BaseModel):
+    """打卡摘要：累计打卡次数与最近一次打卡时间。"""
+
+    total_checkins: int = Field(..., description="累计打卡次数")
+    last_checkin_time: str | None = Field(None, description="最近一次打卡时间")
+
+
 class FavoriteWithStairs(BaseModel):
     """带台阶详情的收藏记录。"""
 

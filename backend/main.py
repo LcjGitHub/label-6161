@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import get_connection, init_db
-from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats, FavoriteCreate, FavoriteOut, FavoriteWithStairs
+from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats, CheckinSummary, FavoriteCreate, FavoriteOut, FavoriteWithStairs
 from seed import seed_if_empty
 
 
@@ -98,6 +98,17 @@ def read_checkins(stairs_id: int):
         raise HTTPException(status_code=404, detail="台阶打卡点不存在")
     with get_connection() as conn:
         return crud.list_checkins(conn, stairs_id)
+
+
+@app.get("/api/stairs/{stairs_id}/checkin-summary", response_model=CheckinSummary)
+def read_checkin_summary(stairs_id: int):
+    """按台阶编号统计打卡次数与最近一条记录时间。"""
+    with get_connection() as conn:
+        stairs = crud.get_stairs(conn, stairs_id)
+    if not stairs:
+        raise HTTPException(status_code=404, detail="台阶打卡点不存在")
+    with get_connection() as conn:
+        return crud.get_checkin_summary(conn, stairs_id)
 
 
 @app.post("/api/checkins", response_model=CheckinOut, status_code=201)
