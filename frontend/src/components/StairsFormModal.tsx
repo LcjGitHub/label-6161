@@ -172,6 +172,11 @@ export default function StairsFormModal({
             )}
           />
 
+          <FormControl>
+            <FormLabel>备注</FormLabel>
+            <Textarea {...register("notes")} rows={3} />
+          </FormControl>
+
           <HStack align="flex-start">
             <FormControl isInvalid={Boolean(errors.longitude)}>
               <FormLabel>经度</FormLabel>
@@ -194,8 +199,8 @@ export default function StairsFormModal({
                       v === "" || v === null || v === undefined
                         ? null
                         : Number(v),
-                    min: { value: -180, message: "经度范围为 -180 ~ 180" },
-                    max: { value: 180, message: "经度范围为 -180 ~ 180" },
+                    min: { value: -180, message: "经度不能小于 -180" },
+                    max: { value: 180, message: "经度不能大于 180" },
                   })}
                 />
               </NumberInput>
@@ -223,8 +228,8 @@ export default function StairsFormModal({
                       v === "" || v === null || v === undefined
                         ? null
                         : Number(v),
-                    min: { value: -90, message: "纬度范围为 -90 ~ 90" },
-                    max: { value: 90, message: "纬度范围为 -90 ~ 90" },
+                    min: { value: -90, message: "纬度不能小于 -90" },
+                    max: { value: 90, message: "纬度不能大于 90" },
                   })}
                 />
               </NumberInput>
@@ -238,11 +243,6 @@ export default function StairsFormModal({
               isChecked={watch("is_public")}
               onChange={(e) => setValue("is_public", e.target.checked)}
             />
-          </FormControl>
-
-          <FormControl>
-            <FormLabel>备注</FormLabel>
-            <Textarea {...register("notes")} rows={3} />
           </FormControl>
         </ModalBody>
         <ModalFooter>

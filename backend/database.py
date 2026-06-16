@@ -13,6 +13,14 @@ SEED_DIFFICULTY_MAP = {
     "宽窄巷子北口阶梯": "简单",
 }
 
+SEED_COORDINATES_MAP = {
+    "朝天门梯道": (106.5828, 29.5628),
+    "十八梯": (106.5774, 29.5534),
+    "武康路阶梯": (121.4404, 31.2045),
+    "鼓浪屿钢琴博物馆台阶": (118.0687, 24.4487),
+    "宽窄巷子北口阶梯": (104.0554, 30.6698),
+}
+
 
 def get_connection() -> sqlite3.Connection:
     """
@@ -31,6 +39,15 @@ def _migrate_seed_difficulties(conn: sqlite3.Connection) -> None:
         conn.execute(
             "UPDATE stairs SET difficulty = ? WHERE name = ? AND difficulty = '中等'",
             (difficulty, name),
+        )
+
+
+def _migrate_seed_coordinates(conn: sqlite3.Connection) -> None:
+    """为已有的种子数据记录补充经纬度值。"""
+    for name, (longitude, latitude) in SEED_COORDINATES_MAP.items():
+        conn.execute(
+            "UPDATE stairs SET longitude = ?, latitude = ? WHERE name = ? AND longitude IS NULL AND latitude IS NULL",
+            (longitude, latitude, name),
         )
 
 
@@ -66,6 +83,7 @@ def init_db() -> None:
         except sqlite3.OperationalError:
             pass
         _migrate_seed_difficulties(conn)
+        _migrate_seed_coordinates(conn)
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS checkins (
