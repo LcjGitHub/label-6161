@@ -35,3 +35,24 @@ class StairsOut(StairsBase):
     id: int
 
     model_config = {"from_attributes": True}
+
+
+class CheckinCreate(BaseModel):
+    """创建打卡记录。"""
+
+    stairs_id: int = Field(..., description="关联台阶编号")
+    checkin_time: str = Field(..., description="打卡日期时间")
+    duration_minutes: int = Field(..., ge=1, description="攀登耗时（分钟）")
+    feeling: str = Field(default="", description="简要感受")
+
+
+class CheckinOut(BaseModel):
+    """打卡记录响应。"""
+
+    id: int
+    stairs_id: int
+    checkin_time: str
+    duration_minutes: int
+    feeling: str
+
+    model_config = {"from_attributes": True}

@@ -18,7 +18,7 @@ def get_connection() -> sqlite3.Connection:
 
 
 def init_db() -> None:
-    """创建台阶打卡点表（若不存在）。"""
+    """创建台阶打卡点表与打卡记录表（若不存在）。"""
     with get_connection() as conn:
         conn.execute(
             """
@@ -30,6 +30,18 @@ def init_db() -> None:
                 estimated_height REAL NOT NULL,
                 is_public INTEGER NOT NULL DEFAULT 1,
                 notes TEXT DEFAULT ''
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS checkins (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                stairs_id INTEGER NOT NULL,
+                checkin_time TEXT NOT NULL,
+                duration_minutes INTEGER NOT NULL,
+                feeling TEXT DEFAULT '',
+                FOREIGN KEY (stairs_id) REFERENCES stairs(id)
             )
             """
         )

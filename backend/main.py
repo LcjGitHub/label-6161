@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import get_connection, init_db
-from schemas import StairsCreate, StairsOut, StairsUpdate
+from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut
 from seed import seed_if_empty
 
 
@@ -78,3 +78,21 @@ def delete_stairs(stairs_id: int):
         ok = crud.delete_stairs(conn, stairs_id)
     if not ok:
         raise HTTPException(status_code=404, detail="台阶打卡点不存在")
+
+
+@app.get("/api/stairs/{stairs_id}/checkins", response_model=list[CheckinOut])
+def read_checkins(stairs_id: int):
+    """按台阶编号查询打卡记录列表。"""
+    with get_connection() as conn:
+        return crud.list_checkins(conn, stairs_id)
+
+
+@app.post("/api/checkins", response_model=CheckinOut, status_code=201)
+def create_checkin(data: CheckinCreate):
+    """新增一条打卡记录。"""
+    with get_connection() as conn:
+        stairs = crud.get_stairs(conn, data.stairs_id)
+    if not stairs:
+        raise HTTPException(status_code=404, detail="关联台阶不存在")
+    with get_connection() as conn:
+        return crud.create_checkin(conn, data)

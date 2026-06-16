@@ -18,3 +18,18 @@ export interface StairsFormData {
   is_public: boolean;
   notes: string;
 }
+
+export interface Checkin {
+  id: number;
+  stairs_id: number;
+  checkin_time: string;
+  duration_minutes: number;
+  feeling: string;
+}
+
+export interface CheckinFormData {
+  stairs_id: number;
+  checkin_time: string;
+  duration_minutes: number;
+  feeling: string;
+}

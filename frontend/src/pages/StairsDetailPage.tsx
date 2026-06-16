@@ -2,20 +2,26 @@ import {
   Badge,
   Box,
   Button,
+  Card,
+  CardBody,
   Divider,
+  FormControl,
+  FormLabel,
   Heading,
   HStack,
+  Input,
   Spinner,
   Text,
+  Textarea,
   useDisclosure,
   useToast,
   VStack,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { deleteStairs, fetchStairsById } from "../api/stairs";
+import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin } from "../api/stairs";
 import StairsFormModal from "../components/StairsFormModal";
-import type { Stairs } from "../types/stairs";
+import type { Stairs, Checkin, CheckinFormData } from "../types/stairs";
 
 export default function StairsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +30,15 @@ export default function StairsDetailPage() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [item, setItem] = useState<Stairs | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkins, setCheckins] = useState<Checkin[]>([]);
+  const [checkinsLoading, setCheckinsLoading] = useState(false);
+  const [form, setForm] = useState<CheckinFormData>({
+    stairs_id: 0,
+    checkin_time: "",
+    duration_minutes: 1,
+    feeling: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   const loadDetail = useCallback(async () => {
     if (!id) return;
@@ -44,9 +59,51 @@ export default function StairsDetailPage() {
     }
   }, [id, toast]);
 
+  const loadCheckins = useCallback(async () => {
+    if (!id) return;
+    setCheckinsLoading(true);
+    try {
+      const data = await fetchCheckins(Number(id));
+      setCheckins(data);
+    } catch {
+      toast({
+        title: "加载打卡记录失败",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setCheckinsLoading(false);
+    }
+  }, [id, toast]);
+
   useEffect(() => {
     loadDetail();
-  }, [loadDetail]);
+    loadCheckins();
+  }, [loadDetail, loadCheckins]);
+
+  useEffect(() => {
+    if (id) {
+      setForm((prev) => ({ ...prev, stairs_id: Number(id) }));
+    }
+  }, [id]);
+
+  const handleSubmit = async () => {
+    if (!form.checkin_time) {
+      toast({ title: "请填写打卡日期时间", status: "warning", duration: 2000 });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await createCheckin(form);
+      toast({ title: "打卡成功", status: "success", duration: 2000 });
+      setForm((prev) => ({ ...prev, checkin_time: "", duration_minutes: 1, feeling: "" }));
+      loadCheckins();
+    } catch {
+      toast({ title: "打卡失败", status: "error", duration: 3000 });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!item || !window.confirm(`确定删除「${item.name}」？`)) return;
@@ -144,6 +201,92 @@ export default function StairsDetailPage() {
           loadDetail();
         }}
       />
+
+      <Divider my={8} />
+
+      <Heading size="md" mb={4}>
+        打卡记录
+      </Heading>
+
+      <VStack align="stretch" spacing={3} mb={6}>
+        <HStack spacing={3} align="end" flexWrap="wrap">
+          <FormControl flex="1" minW="180px">
+            <FormLabel fontSize="sm">打卡日期时间</FormLabel>
+            <Input
+              type="datetime-local"
+              value={form.checkin_time}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, checkin_time: e.target.value }))
+              }
+            />
+          </FormControl>
+          <FormControl w="120px">
+            <FormLabel fontSize="sm">耗时（分钟）</FormLabel>
+            <Input
+              type="number"
+              min={1}
+              value={form.duration_minutes}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  duration_minutes: Number(e.target.value) || 1,
+                }))
+              }
+            />
+          </FormControl>
+          <FormControl flex="1" minW="180px">
+            <FormLabel fontSize="sm">简要感受</FormLabel>
+            <Input
+              value={form.feeling}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, feeling: e.target.value }))
+              }
+              placeholder="写下你的感受…"
+            />
+          </FormControl>
+          <Button
+            colorScheme="teal"
+            onClick={handleSubmit}
+            isLoading={submitting}
+            minW="80px"
+          >
+            打卡
+          </Button>
+        </HStack>
+      </VStack>
+
+      {checkinsLoading ? (
+        <HStack justify="center" py={4}>
+          <Spinner size="sm" color="teal.500" />
+          <Text fontSize="sm" color="gray.500">
+            加载中…
+          </Text>
+        </HStack>
+      ) : checkins.length === 0 ? (
+        <Text color="gray.500" fontSize="sm" py={4} textAlign="center">
+          暂无打卡记录，快来成为第一个打卡者吧！
+        </Text>
+      ) : (
+        <VStack align="stretch" spacing={3}>
+          {checkins.map((c) => (
+            <Card key={c.id} variant="outline" size="sm">
+              <CardBody>
+                <HStack justify="space-between" mb={1}>
+                  <Text fontWeight="semibold" fontSize="sm">
+                    {c.checkin_time}
+                  </Text>
+                  <Badge colorScheme="teal">{c.duration_minutes} 分钟</Badge>
+                </HStack>
+                {c.feeling && (
+                  <Text fontSize="sm" color="gray.600">
+                    {c.feeling}
+                  </Text>
+                )}
+              </CardBody>
+            </Card>
+          ))}
+        </VStack>
+      )}
     </Box>
   );
 }

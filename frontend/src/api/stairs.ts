@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Stairs, StairsFormData } from "../types/stairs";
+import type { Stairs, StairsFormData, Checkin, CheckinFormData } from "../types/stairs";
 
 const api = axios.create({
   baseURL: "/api",
@@ -58,4 +58,14 @@ export async function updateStairs(
  */
 export async function deleteStairs(id: number): Promise<void> {
   await api.delete(`/stairs/${id}`);
+}
+
+export async function fetchCheckins(stairsId: number): Promise<Checkin[]> {
+  const { data } = await api.get<Checkin[]>(`/stairs/${stairsId}/checkins`);
+  return data;
+}
+
+export async function createCheckin(payload: CheckinFormData): Promise<Checkin> {
+  const { data } = await api.post<Checkin>("/checkins", payload);
+  return data;
 }

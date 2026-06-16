@@ -2,7 +2,7 @@
 
 import sqlite3
 
-from schemas import StairsCreate, StairsUpdate
+from schemas import StairsCreate, StairsUpdate, CheckinCreate
 
 
 def _row_to_dict(row: sqlite3.Row) -> dict:
@@ -114,3 +114,45 @@ def list_cities(conn: sqlite3.Connection) -> list[str]:
         "SELECT DISTINCT city FROM stairs ORDER BY city"
     ).fetchall()
     return [r["city"] for r in rows]
+
+
+def _checkin_row_to_dict(row: sqlite3.Row) -> dict:
+    """将打卡记录行转为 API 字典。"""
+    return {
+        "id": row["id"],
+        "stairs_id": row["stairs_id"],
+        "checkin_time": row["checkin_time"],
+        "duration_minutes": row["duration_minutes"],
+        "feeling": row["feeling"] or "",
+    }
+
+
+def list_checkins(conn: sqlite3.Connection, stairs_id: int) -> list[dict]:
+    """按台阶编号查询打卡记录列表。"""
+    rows = conn.execute(
+        "SELECT * FROM checkins WHERE stairs_id = ? ORDER BY checkin_time DESC",
+        (stairs_id,),
+    ).fetchall()
+    return [_checkin_row_to_dict(r) for r in rows]
+
+
+def create_checkin(conn: sqlite3.Connection, data: CheckinCreate) -> dict:
+    """新增一条打卡记录。"""
+    cursor = conn.execute(
+        """
+        INSERT INTO checkins (stairs_id, checkin_time, duration_minutes, feeling)
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            data.stairs_id,
+            data.checkin_time,
+            data.duration_minutes,
+            data.feeling,
+        ),
+    )
+    conn.commit()
+    row = conn.execute(
+        "SELECT * FROM checkins WHERE id = ?",
+        (cursor.lastrowid,),
+    ).fetchone()
+    return _checkin_row_to_dict(row)
