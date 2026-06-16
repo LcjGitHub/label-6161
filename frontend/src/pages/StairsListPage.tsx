@@ -5,7 +5,6 @@ import {
   FormControl,
   FormLabel,
   HStack,
-  IconButton,
   Input,
   Select,
   Spinner,
@@ -15,16 +14,16 @@ import {
   Text,
   Th,
   Thead,
-  Tooltip,
   Tr,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { fetchCities, fetchStairs, fetchFavorites, createFavorite, deleteFavorite } from "../api/stairs";
+import { fetchCities, fetchStairs } from "../api/stairs";
 import type { Stairs } from "../types/stairs";
 import StairsFormModal from "../components/StairsFormModal";
+import { useFavorites } from "../hooks/useFavorite";
 
 const getDifficultyColor = (difficulty: string) => {
   switch (difficulty) {
@@ -49,19 +48,8 @@ export default function StairsListPage() {
   const [debouncedNameKeyword, setDebouncedNameKeyword] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [loading, setLoading] = useState(true);
-  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
-  const [togglingId, setTogglingId] = useState<number | null>(null);
   const debounceTimerRef = useRef<number | null>(null);
-
-  const loadFavorites = useCallback(async () => {
-    try {
-      const favs = await fetchFavorites();
-      const ids = new Set(favs.map((f) => f.stairs_id));
-      setFavoriteIds(ids);
-    } catch {
-      setFavoriteIds(new Set());
-    }
-  }, []);
+  const { isFavorited, toggle, isToggling, loadAll } = useFavorites();
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -84,42 +72,13 @@ export default function StairsListPage() {
     }
   }, [cityFilter, debouncedNameKeyword, sortBy, toast]);
 
-  const handleToggleFavorite = async (stairsId: number) => {
-    setTogglingId(stairsId);
-    const isFav = favoriteIds.has(stairsId);
-    try {
-      if (isFav) {
-        await deleteFavorite(stairsId);
-        setFavoriteIds((prev) => {
-          const next = new Set(prev);
-          next.delete(stairsId);
-          return next;
-        });
-        toast({ title: "已取消收藏", status: "success", duration: 2000 });
-      } else {
-        await createFavorite(stairsId);
-        setFavoriteIds((prev) => {
-          const next = new Set(prev);
-          next.add(stairsId);
-          return next;
-        });
-        toast({ title: "收藏成功", status: "success", duration: 2000 });
-      }
-    } catch {
-      toast({
-        title: isFav ? "取消收藏失败" : "收藏失败",
-        status: "error",
-        duration: 3000,
-      });
-    } finally {
-      setTogglingId(null);
-    }
-  };
-
   useEffect(() => {
     loadData();
-    loadFavorites();
-  }, [loadData, loadFavorites]);
+  }, [loadData]);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
 
   const handleNameSearch = (value: string) => {
     setNameKeyword(value);
@@ -132,6 +91,12 @@ export default function StairsListPage() {
   };
 
   const hasFilter = cityFilter || debouncedNameKeyword;
+
+  const handleToggleFavorite = (e: React.MouseEvent, stairsId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggle(stairsId);
+  };
 
   return (
     <Box>
@@ -198,59 +163,59 @@ export default function StairsListPage() {
               </Tr>
             </Thead>
             <Tbody>
-              {stairs.map((item) => (
-                <Tr key={item.id}>
-                  <Td fontWeight="medium">{item.name}</Td>
-                  <Td>{item.city}</Td>
-                  <Td isNumeric>{item.step_count}</Td>
-                  <Td isNumeric>{item.estimated_height}</Td>
-                  <Td>
-                    <Badge colorScheme={getDifficultyColor(item.difficulty)}>
-                      {item.difficulty}
-                    </Badge>
-                  </Td>
-                  <Td fontSize="sm" color="gray.600">
-                    {item.longitude != null && item.latitude != null
-                      ? `${item.longitude}, ${item.latitude}`
-                      : "—"}
-                  </Td>
-                  <Td>
-                    <Badge colorScheme={item.is_public ? "green" : "orange"}>
-                      {item.is_public ? "公开" : "非公开"}
-                    </Badge>
-                  </Td>
-                  <Td>
-                    <HStack spacing={2}>
-                      <Tooltip label={favoriteIds.has(item.id) ? "取消收藏" : "收藏"}>
-                        <IconButton
+              {stairs.map((item) => {
+                const fav = isFavorited(item.id);
+                return (
+                  <Tr key={item.id}>
+                    <Td fontWeight="medium">{item.name}</Td>
+                    <Td>{item.city}</Td>
+                    <Td isNumeric>{item.step_count}</Td>
+                    <Td isNumeric>{item.estimated_height}</Td>
+                    <Td>
+                      <Badge colorScheme={getDifficultyColor(item.difficulty)}>
+                        {item.difficulty}
+                      </Badge>
+                    </Td>
+                    <Td fontSize="sm" color="gray.600">
+                      {item.longitude != null && item.latitude != null
+                        ? `${item.longitude}, ${item.latitude}`
+                        : "—"}
+                    </Td>
+                    <Td>
+                      <Badge colorScheme={item.is_public ? "green" : "orange"}>
+                        {item.is_public ? "公开" : "非公开"}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <HStack spacing={2}>
+                        <Button
                           size="sm"
-                          variant="ghost"
-                          colorScheme={favoriteIds.has(item.id) ? "pink" : "gray"}
-                          aria-label={favoriteIds.has(item.id) ? "取消收藏" : "收藏"}
-                          isLoading={togglingId === item.id}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleToggleFavorite(item.id);
-                          }}
-                          fontSize="lg"
+                          colorScheme={fav ? "pink" : "gray"}
+                          variant={fav ? "solid" : "outline"}
+                          onClick={(e) => handleToggleFavorite(e, item.id)}
+                          isLoading={isToggling(item.id)}
+                          leftIcon={
+                            <Text as="span" fontSize="lg">
+                              {fav ? "♥" : "♡"}
+                            </Text>
+                          }
                         >
-                          {favoriteIds.has(item.id) ? "♥" : "♡"}
-                        </IconButton>
-                      </Tooltip>
-                      <Button
-                        as={RouterLink}
-                        to={`/stairs/${item.id}`}
-                        size="sm"
-                        variant="link"
-                        colorScheme="teal"
-                      >
-                        详情
-                      </Button>
-                    </HStack>
-                  </Td>
-                </Tr>
-              ))}
+                          {fav ? "已收藏" : "收藏"}
+                        </Button>
+                        <Button
+                          as={RouterLink}
+                          to={`/stairs/${item.id}`}
+                          size="sm"
+                          variant="link"
+                          colorScheme="teal"
+                        >
+                          详情
+                        </Button>
+                      </HStack>
+                    </Td>
+                  </Tr>
+                );
+              })}
             </Tbody>
           </Table>
         </Box>

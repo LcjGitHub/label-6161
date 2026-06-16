@@ -25,7 +25,8 @@ import {
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchCheckinSummary, fetchFavoriteStatus, createFavorite, deleteFavorite } from "../api/stairs";
+import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchCheckinSummary } from "../api/stairs";
+import { useFavorite } from "../hooks/useFavorite";
 import StairsFormModal from "../components/StairsFormModal";
 import type { Stairs, Checkin, CheckinFormData, CheckinSummary } from "../types/stairs";
 
@@ -58,8 +59,6 @@ export default function StairsDetailPage() {
     feeling: "",
   });
   const [submitting, setSubmitting] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
-  const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [checkinSummary, setCheckinSummary] = useState<CheckinSummary | null>(null);
   const [checkinSummaryLoading, setCheckinSummaryLoading] = useState(false);
   const [checkinSummaryError, setCheckinSummaryError] = useState(false);
@@ -111,15 +110,9 @@ export default function StairsDetailPage() {
     }
   }, [id, toast]);
 
-  const loadFavoriteStatus = useCallback(async () => {
-    if (!id) return;
-    try {
-      const data = await fetchFavoriteStatus(Number(id));
-      setIsFavorited(!!data);
-    } catch {
-      setIsFavorited(false);
-    }
-  }, [id]);
+  const { isFavorited, loading: favoriteLoading, loadStatus: loadFavoriteStatus, toggle: handleFavoriteToggle } = useFavorite(
+    id ? Number(id) : null,
+  );
 
   const loadCheckinSummary = useCallback(async () => {
     if (!id) return;
@@ -140,30 +133,6 @@ export default function StairsDetailPage() {
       setCheckinSummaryLoading(false);
     }
   }, [id, toast]);
-
-  const handleFavoriteToggle = async () => {
-    if (!id || !item) return;
-    setFavoriteLoading(true);
-    try {
-      if (isFavorited) {
-        await deleteFavorite(Number(id));
-        setIsFavorited(false);
-        toast({ title: "已取消收藏", status: "success", duration: 2000 });
-      } else {
-        await createFavorite(Number(id));
-        setIsFavorited(true);
-        toast({ title: "收藏成功", status: "success", duration: 2000 });
-      }
-    } catch {
-      toast({
-        title: isFavorited ? "取消收藏失败" : "收藏失败",
-        status: "error",
-        duration: 3000,
-      });
-    } finally {
-      setFavoriteLoading(false);
-    }
-  };
 
   useEffect(() => {
     loadDetail();
