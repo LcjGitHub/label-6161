@@ -84,7 +84,7 @@ export default function StairsListPage() {
     }, 300);
   };
 
-  const hasFilter = cityFilter || debouncedNameKeyword || sortBy;
+  const hasFilter = cityFilter || debouncedNameKeyword;
 
   return (
     <Box>
