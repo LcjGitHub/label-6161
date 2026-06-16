@@ -20,9 +20,11 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { createStairs, updateStairs } from "../api/stairs";
-import type { Stairs, StairsFormData } from "../types/stairs";
+import type { Stairs, StairsFormData, Difficulty } from "../types/stairs";
+
+const DIFFICULTY_OPTIONS: Difficulty[] = ["简单", "中等", "困难"];
 
 interface StairsFormModalProps {
   isOpen: boolean;
@@ -55,6 +57,7 @@ export default function StairsFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     setValue,
@@ -146,20 +149,24 @@ export default function StairsFormModal({
             </FormControl>
           </HStack>
 
-          <FormControl isInvalid={Boolean(errors.difficulty)}>
-            <FormLabel>难度等级</FormLabel>
-            <Select
-              {...register("difficulty", {
-                required: "请选择难度等级",
-              })}
-              value={watch("difficulty")}
-            >
-              <option value="简单">简单</option>
-              <option value="中等">中等</option>
-              <option value="困难">困难</option>
-            </Select>
-            <FormErrorMessage>{errors.difficulty?.message}</FormErrorMessage>
-          </FormControl>
+          <Controller
+            name="difficulty"
+            control={control}
+            rules={{ required: "请选择难度等级" }}
+            render={({ field }) => (
+              <FormControl isInvalid={Boolean(errors.difficulty)}>
+                <FormLabel>难度等级</FormLabel>
+                <Select {...field}>
+                  {DIFFICULTY_OPTIONS.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </Select>
+                <FormErrorMessage>{errors.difficulty?.message}</FormErrorMessage>
+              </FormControl>
+            )}
+          />
 
           <FormControl display="flex" alignItems="center">
             <FormLabel mb={0}>是否公开</FormLabel>

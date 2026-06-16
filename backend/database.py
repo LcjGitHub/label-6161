@@ -5,6 +5,14 @@ from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "stairs.db"
 
+SEED_DIFFICULTY_MAP = {
+    "朝天门梯道": "困难",
+    "十八梯": "中等",
+    "武康路阶梯": "简单",
+    "鼓浪屿钢琴博物馆台阶": "中等",
+    "宽窄巷子北口阶梯": "简单",
+}
+
 
 def get_connection() -> sqlite3.Connection:
     """
@@ -15,6 +23,15 @@ def get_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _migrate_seed_difficulties(conn: sqlite3.Connection) -> None:
+    """为已有的种子数据记录补充难度值。"""
+    for name, difficulty in SEED_DIFFICULTY_MAP.items():
+        conn.execute(
+            "UPDATE stairs SET difficulty = ? WHERE name = ? AND difficulty = '中等'",
+            (difficulty, name),
+        )
 
 
 def init_db() -> None:
@@ -38,6 +55,7 @@ def init_db() -> None:
             conn.execute("ALTER TABLE stairs ADD COLUMN difficulty TEXT NOT NULL DEFAULT '中等'")
         except sqlite3.OperationalError:
             pass
+        _migrate_seed_difficulties(conn)
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS checkins (
