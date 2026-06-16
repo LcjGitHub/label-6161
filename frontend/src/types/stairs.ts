@@ -1,11 +1,14 @@
 /** 台阶打卡点数据类型 */
 
+export type Difficulty = "简单" | "中等" | "困难";
+
 export interface Stairs {
   id: number;
   name: string;
   city: string;
   step_count: number;
   estimated_height: number;
+  difficulty: Difficulty;
   is_public: boolean;
   notes: string;
 }
@@ -15,6 +18,7 @@ export interface StairsFormData {
   city: string;
   step_count: number;
   estimated_height: number;
+  difficulty: Difficulty;
   is_public: boolean;
   notes: string;
 }

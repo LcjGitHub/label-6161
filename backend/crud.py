@@ -13,6 +13,7 @@ def _row_to_dict(row: sqlite3.Row) -> dict:
         "city": row["city"],
         "step_count": row["step_count"],
         "estimated_height": row["estimated_height"],
+        "difficulty": row["difficulty"],
         "is_public": bool(row["is_public"]),
         "notes": row["notes"] or "",
     }
@@ -48,14 +49,15 @@ def create_stairs(conn: sqlite3.Connection, data: StairsCreate) -> dict:
     """创建台阶打卡点。"""
     cursor = conn.execute(
         """
-        INSERT INTO stairs (name, city, step_count, estimated_height, is_public, notes)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO stairs (name, city, step_count, estimated_height, difficulty, is_public, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         (
             data.name,
             data.city,
             data.step_count,
             data.estimated_height,
+            data.difficulty,
             int(data.is_public),
             data.notes,
         ),
@@ -84,7 +86,7 @@ def update_stairs(
         """
         UPDATE stairs
         SET name = ?, city = ?, step_count = ?, estimated_height = ?,
-            is_public = ?, notes = ?
+            difficulty = ?, is_public = ?, notes = ?
         WHERE id = ?
         """,
         (
@@ -92,6 +94,7 @@ def update_stairs(
             merged["city"],
             merged["step_count"],
             merged["estimated_height"],
+            merged["difficulty"],
             merged["is_public"],
             merged["notes"],
             stairs_id,
@@ -208,7 +211,7 @@ def list_favorites(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         """
         SELECT f.id AS fav_id, f.stairs_id, f.favorite_time,
-               s.id, s.name, s.city, s.step_count, s.estimated_height, s.is_public, s.notes
+               s.id, s.name, s.city, s.step_count, s.estimated_height, s.difficulty, s.is_public, s.notes
         FROM favorites f
         JOIN stairs s ON f.stairs_id = s.id
         ORDER BY f.favorite_time DESC

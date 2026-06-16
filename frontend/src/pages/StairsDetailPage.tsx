@@ -23,6 +23,19 @@ import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchFavor
 import StairsFormModal from "../components/StairsFormModal";
 import type { Stairs, Checkin, CheckinFormData } from "../types/stairs";
 
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "简单":
+      return "green";
+    case "中等":
+      return "yellow";
+    case "困难":
+      return "red";
+    default:
+      return "gray";
+  }
+};
+
 export default function StairsDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -237,6 +250,14 @@ export default function StairsDetailPage() {
             预估高度
           </Text>
           <Text>{item.estimated_height} m</Text>
+        </HStack>
+        <HStack>
+          <Text fontWeight="semibold" minW="100px">
+            难度等级
+          </Text>
+          <Badge colorScheme={getDifficultyColor(item.difficulty)} fontSize="md">
+            {item.difficulty}
+          </Badge>
         </HStack>
         <Box>
           <Text fontWeight="semibold" mb={1}>

@@ -14,6 +14,7 @@ import {
   ModalOverlay,
   NumberInput,
   NumberInputField,
+  Select,
   Switch,
   Textarea,
   useToast,
@@ -35,6 +36,7 @@ const defaultValues: StairsFormData = {
   city: "",
   step_count: 100,
   estimated_height: 15,
+  difficulty: "中等",
   is_public: true,
   notes: "",
 };
@@ -69,6 +71,7 @@ export default function StairsFormModal({
               city: initial.city,
               step_count: initial.step_count,
               estimated_height: initial.estimated_height,
+              difficulty: initial.difficulty,
               is_public: initial.is_public,
               notes: initial.notes,
             }
@@ -142,6 +145,21 @@ export default function StairsFormModal({
               </FormErrorMessage>
             </FormControl>
           </HStack>
+
+          <FormControl isInvalid={Boolean(errors.difficulty)}>
+            <FormLabel>难度等级</FormLabel>
+            <Select
+              {...register("difficulty", {
+                required: "请选择难度等级",
+              })}
+              value={watch("difficulty")}
+            >
+              <option value="简单">简单</option>
+              <option value="中等">中等</option>
+              <option value="困难">困难</option>
+            </Select>
+            <FormErrorMessage>{errors.difficulty?.message}</FormErrorMessage>
+          </FormControl>
 
           <FormControl display="flex" alignItems="center">
             <FormLabel mb={0}>是否公开</FormLabel>

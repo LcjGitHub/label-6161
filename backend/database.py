@@ -28,11 +28,16 @@ def init_db() -> None:
                 city TEXT NOT NULL,
                 step_count INTEGER NOT NULL,
                 estimated_height REAL NOT NULL,
+                difficulty TEXT NOT NULL DEFAULT '中等',
                 is_public INTEGER NOT NULL DEFAULT 1,
                 notes TEXT DEFAULT ''
             )
             """
         )
+        try:
+            conn.execute("ALTER TABLE stairs ADD COLUMN difficulty TEXT NOT NULL DEFAULT '中等'")
+        except sqlite3.OperationalError:
+            pass
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS checkins (

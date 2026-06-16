@@ -1,6 +1,8 @@
 """Pydantic 请求/响应模型。"""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+ALLOWED_DIFFICULTIES = {"简单", "中等", "困难"}
 
 
 class StairsBase(BaseModel):
@@ -10,8 +12,16 @@ class StairsBase(BaseModel):
     city: str = Field(..., min_length=1, description="城市")
     step_count: int = Field(..., ge=1, description="级数")
     estimated_height: float = Field(..., ge=0, description="预估高度（米）")
+    difficulty: str = Field(default="中等", description="难度等级：简单/中等/困难")
     is_public: bool = Field(default=True, description="是否公开")
     notes: str = Field(default="", description="备注")
+
+    @field_validator("difficulty")
+    @classmethod
+    def validate_difficulty(cls, v: str) -> str:
+        if v not in ALLOWED_DIFFICULTIES:
+            raise ValueError(f"难度必须是以下值之一：{', '.join(sorted(ALLOWED_DIFFICULTIES))}")
+        return v
 
 
 class StairsCreate(StairsBase):
@@ -25,8 +35,16 @@ class StairsUpdate(BaseModel):
     city: str | None = Field(default=None, min_length=1)
     step_count: int | None = Field(default=None, ge=1)
     estimated_height: float | None = Field(default=None, ge=0)
+    difficulty: str | None = None
     is_public: bool | None = None
     notes: str | None = None
+
+    @field_validator("difficulty")
+    @classmethod
+    def validate_difficulty(cls, v: str | None) -> str | None:
+        if v is not None and v not in ALLOWED_DIFFICULTIES:
+            raise ValueError(f"难度必须是以下值之一：{', '.join(sorted(ALLOWED_DIFFICULTIES))}")
+        return v
 
 
 class StairsOut(StairsBase):

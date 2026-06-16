@@ -23,6 +23,19 @@ import { fetchCities, fetchStairs } from "../api/stairs";
 import type { Stairs } from "../types/stairs";
 import StairsFormModal from "../components/StairsFormModal";
 
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "简单":
+      return "green";
+    case "中等":
+      return "yellow";
+    case "困难":
+      return "red";
+    default:
+      return "gray";
+  }
+};
+
 export default function StairsListPage() {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -93,6 +106,7 @@ export default function StairsListPage() {
                 <Th>城市</Th>
                 <Th isNumeric>级数</Th>
                 <Th isNumeric>预估高度(m)</Th>
+                <Th>难度</Th>
                 <Th>是否公开</Th>
                 <Th>操作</Th>
               </Tr>
@@ -104,6 +118,11 @@ export default function StairsListPage() {
                   <Td>{item.city}</Td>
                   <Td isNumeric>{item.step_count}</Td>
                   <Td isNumeric>{item.estimated_height}</Td>
+                  <Td>
+                    <Badge colorScheme={getDifficultyColor(item.difficulty)}>
+                      {item.difficulty}
+                    </Badge>
+                  </Td>
                   <Td>
                     <Badge colorScheme={item.is_public ? "green" : "orange"}>
                       {item.is_public ? "公开" : "非公开"}

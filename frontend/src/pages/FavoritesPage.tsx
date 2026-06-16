@@ -1,4 +1,5 @@
 import {
+  Badge,
   Box,
   Button,
   Heading,
@@ -19,6 +20,19 @@ import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { deleteFavorite, fetchFavorites } from "../api/stairs";
 import type { FavoriteWithStairs } from "../types/stairs";
+
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty) {
+    case "简单":
+      return "green";
+    case "中等":
+      return "yellow";
+    case "困难":
+      return "red";
+    default:
+      return "gray";
+  }
+};
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
@@ -107,6 +121,7 @@ export default function FavoritesPage() {
                 <Th>名称</Th>
                 <Th>城市</Th>
                 <Th>级数</Th>
+                <Th>难度</Th>
                 <Th>收藏时间</Th>
                 <Th>操作</Th>
               </Tr>
@@ -118,6 +133,11 @@ export default function FavoritesPage() {
                   <Td fontWeight="medium">{fav.stairs.name}</Td>
                   <Td>{fav.stairs.city}</Td>
                   <Td>{fav.stairs.step_count} 级</Td>
+                  <Td>
+                    <Badge colorScheme={getDifficultyColor(fav.stairs.difficulty)}>
+                      {fav.stairs.difficulty}
+                    </Badge>
+                  </Td>
                   <Td>{formatDateTime(fav.favorite_time)}</Td>
                   <Td>
                     <HStack spacing={2}>
