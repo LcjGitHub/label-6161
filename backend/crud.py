@@ -157,3 +157,33 @@ def create_checkin(conn: sqlite3.Connection, data: CheckinCreate) -> dict:
         (cursor.lastrowid,),
     ).fetchone()
     return _checkin_row_to_dict(row)
+
+
+def get_stairs_stats(conn: sqlite3.Connection) -> dict:
+    """获取台阶数据统计概览。"""
+    agg_row = conn.execute(
+        """
+        SELECT COUNT(*) AS total_count,
+               AVG(step_count) AS avg_step_count,
+               SUM(estimated_height) AS total_estimated_height
+        FROM stairs
+        """
+    ).fetchone()
+
+    city_rows = conn.execute(
+        """
+        SELECT city, COUNT(*) AS count
+        FROM stairs
+        GROUP BY city
+        ORDER BY count DESC, city
+        """
+    ).fetchall()
+
+    return {
+        "total_count": agg_row["total_count"] or 0,
+        "avg_step_count": float(agg_row["avg_step_count"] or 0),
+        "total_estimated_height": float(agg_row["total_estimated_height"] or 0),
+        "city_distribution": [
+            {"city": r["city"], "count": r["count"]} for r in city_rows
+        ],
+    }

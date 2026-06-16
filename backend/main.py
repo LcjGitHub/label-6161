@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import get_connection, init_db
-from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut
+from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats
 from seed import seed_if_empty
 
 
@@ -100,3 +100,10 @@ def create_checkin(data: CheckinCreate):
         raise HTTPException(status_code=404, detail="关联台阶不存在")
     with get_connection() as conn:
         return crud.create_checkin(conn, data)
+
+
+@app.get("/api/stats", response_model=StairsStats)
+def read_stats():
+    """获取台阶数据统计概览。"""
+    with get_connection() as conn:
+        return crud.get_stairs_stats(conn)

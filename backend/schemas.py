@@ -56,3 +56,19 @@ class CheckinOut(BaseModel):
     feeling: str
 
     model_config = {"from_attributes": True}
+
+
+class CityStairsCount(BaseModel):
+    """各城市台阶数量分布。"""
+
+    city: str = Field(..., description="城市名称")
+    count: int = Field(..., description="台阶数量")
+
+
+class StairsStats(BaseModel):
+    """台阶数据统计概览。"""
+
+    total_count: int = Field(..., description="全部台阶总数")
+    avg_step_count: float = Field(..., description="全部台阶级数平均值")
+    total_estimated_height: float = Field(..., description="预估高度合计值（米）")
+    city_distribution: list[CityStairsCount] = Field(..., description="各城市台阶数量分布")
