@@ -119,7 +119,7 @@ export default function StairsListPage() {
         <FormControl maxW="240px" flex="1 1 200px">
           <FormLabel>难度筛选</FormLabel>
           <Select
-            placeholder="全部难度"
+            placeholder="全部"
             value={difficultyFilter}
             onChange={(e) => setDifficultyFilter(e.target.value)}
           >

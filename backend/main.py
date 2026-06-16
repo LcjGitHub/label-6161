@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import crud
 from database import get_connection, init_db
-from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats, CheckinSummary, FavoriteCreate, FavoriteOut, FavoriteWithStairs
+from schemas import StairsCreate, StairsOut, StairsUpdate, CheckinCreate, CheckinOut, StairsStats, CheckinSummary, FavoriteCreate, FavoriteOut, FavoriteWithStairs, ALLOWED_DIFFICULTIES
 from seed import seed_if_empty
 
 
@@ -38,6 +38,11 @@ def read_stairs(
     sort_by: str | None = Query(default=None, description="排序方式：step_count_asc / step_count_desc"),
 ):
     """获取台阶列表。"""
+    if difficulty is not None and difficulty not in ALLOWED_DIFFICULTIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"难度参数无效，必须是以下值之一：{', '.join(sorted(ALLOWED_DIFFICULTIES))}",
+        )
     with get_connection() as conn:
         return crud.list_stairs(
             conn,

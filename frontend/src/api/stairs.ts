@@ -9,8 +9,8 @@ const api = axios.create({
  * 获取台阶列表，可选城市筛选、名称关键字搜索、难度筛选和级数排序
  * @param city - 城市名称
  * @param nameKeyword - 名称关键字
- * @param difficulty - 难度等级：简单 / 中等 / 困难
- * @param sortBy - 排序方式："step_count_asc"（级数从少到多 / "step_count_desc"（级数从多到少，默认不传按编号排序
+ * @param difficulty - 难度等级：简单 / 中等 / 困难，不传则不过滤
+ * @param sortBy - 排序方式："step_count_asc"（级数从少到多）/ "step_count_desc"（级数从多到少），默认不传按编号排序
  */
 export async function fetchStairs(city?: string, nameKeyword?: string, difficulty?: string, sortBy?: string): Promise<Stairs[]> {
   const params: Record<string, string> = {};
