@@ -24,19 +24,7 @@ import { fetchCities, fetchStairs } from "../api/stairs";
 import type { Stairs } from "../types/stairs";
 import StairsFormModal from "../components/StairsFormModal";
 import { useFavorites } from "../hooks/useFavorite";
-
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case "简单":
-      return "green";
-    case "中等":
-      return "yellow";
-    case "困难":
-      return "red";
-    default:
-      return "gray";
-  }
-};
+import { DifficultyBadge } from "../utils/difficulty";
 
 export default function StairsListPage() {
   const toast = useToast();
@@ -185,9 +173,7 @@ export default function StairsListPage() {
                     <Td isNumeric>{item.step_count}</Td>
                     <Td isNumeric>{item.estimated_height}</Td>
                     <Td>
-                      <Badge colorScheme={getDifficultyColor(item.difficulty)}>
-                        {item.difficulty}
-                      </Badge>
+                      <DifficultyBadge difficulty={item.difficulty} />
                     </Td>
                     <Td fontSize="sm" color="gray.600">
                       {item.longitude != null && item.latitude != null

@@ -29,19 +29,7 @@ import { deleteStairs, fetchStairsById, fetchCheckins, createCheckin, fetchCheck
 import { useFavorite } from "../hooks/useFavorite";
 import StairsFormModal from "../components/StairsFormModal";
 import type { Stairs, Checkin, CheckinFormData, CheckinSummary } from "../types/stairs";
-
-const getDifficultyColor = (difficulty: string) => {
-  switch (difficulty) {
-    case "简单":
-      return "green";
-    case "中等":
-      return "yellow";
-    case "困难":
-      return "red";
-    default:
-      return "gray";
-  }
-};
+import { DifficultyBadge } from "../utils/difficulty";
 
 export default function StairsDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -304,9 +292,7 @@ export default function StairsDetailPage() {
           <Text fontWeight="semibold" minW="100px">
             难度等级
           </Text>
-          <Badge colorScheme={getDifficultyColor(item.difficulty)} fontSize="md">
-            {item.difficulty}
-          </Badge>
+          <DifficultyBadge difficulty={item.difficulty} fontSize="md" />
         </HStack>
         <HStack>
           <Text fontWeight="semibold" minW="100px">
