@@ -40,6 +40,17 @@ export default function StairsDetailPage() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  const formatDateTime = (raw: string): string => {
+    if (!raw) return raw;
+    const normalized = raw.replace("T", " ");
+    const match = normalized.match(
+      /^(\d{4})-(\d{2})-(\d{2})\s*(\d{1,2}):(\d{2})/,
+    );
+    if (!match) return raw;
+    const [, y, m, d, h, min] = match;
+    return `${y}年${m}月${d}日 ${h}:${min}`;
+  };
+
   const loadDetail = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -90,6 +101,10 @@ export default function StairsDetailPage() {
   const handleSubmit = async () => {
     if (!form.checkin_time) {
       toast({ title: "请填写打卡日期时间", status: "warning", duration: 2000 });
+      return;
+    }
+    if (!form.duration_minutes || form.duration_minutes < 1) {
+      toast({ title: "耗时至少为 1 分钟", status: "warning", duration: 2000 });
       return;
     }
     setSubmitting(true);
@@ -236,12 +251,14 @@ export default function StairsDetailPage() {
           </FormControl>
           <FormControl flex="1" minW="180px">
             <FormLabel fontSize="sm">简要感受</FormLabel>
-            <Input
+            <Textarea
               value={form.feeling}
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, feeling: e.target.value }))
               }
               placeholder="写下你的感受…"
+              rows={2}
+              resize="vertical"
             />
           </FormControl>
           <Button
@@ -273,7 +290,7 @@ export default function StairsDetailPage() {
               <CardBody>
                 <HStack justify="space-between" mb={1}>
                   <Text fontWeight="semibold" fontSize="sm">
-                    {c.checkin_time}
+                    {formatDateTime(c.checkin_time)}
                   </Text>
                   <Badge colorScheme="teal">{c.duration_minutes} 分钟</Badge>
                 </HStack>

@@ -102,7 +102,8 @@ def update_stairs(
 
 
 def delete_stairs(conn: sqlite3.Connection, stairs_id: int) -> bool:
-    """删除台阶打卡点。"""
+    """删除台阶打卡点及其下全部打卡记录。"""
+    conn.execute("DELETE FROM checkins WHERE stairs_id = ?", (stairs_id,))
     cursor = conn.execute("DELETE FROM stairs WHERE id = ?", (stairs_id,))
     conn.commit()
     return cursor.rowcount > 0

@@ -84,6 +84,10 @@ def delete_stairs(stairs_id: int):
 def read_checkins(stairs_id: int):
     """按台阶编号查询打卡记录列表。"""
     with get_connection() as conn:
+        stairs = crud.get_stairs(conn, stairs_id)
+    if not stairs:
+        raise HTTPException(status_code=404, detail="台阶打卡点不存在")
+    with get_connection() as conn:
         return crud.list_checkins(conn, stairs_id)
 
 
