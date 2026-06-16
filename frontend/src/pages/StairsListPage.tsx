@@ -5,6 +5,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  IconButton,
   Input,
   Select,
   Spinner,
@@ -14,13 +15,14 @@ import {
   Text,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { fetchCities, fetchStairs } from "../api/stairs";
+import { fetchCities, fetchStairs, fetchFavorites, createFavorite, deleteFavorite } from "../api/stairs";
 import type { Stairs } from "../types/stairs";
 import StairsFormModal from "../components/StairsFormModal";
 
@@ -47,7 +49,19 @@ export default function StairsListPage() {
   const [debouncedNameKeyword, setDebouncedNameKeyword] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [loading, setLoading] = useState(true);
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
+  const [togglingId, setTogglingId] = useState<number | null>(null);
   const debounceTimerRef = useRef<number | null>(null);
+
+  const loadFavorites = useCallback(async () => {
+    try {
+      const favs = await fetchFavorites();
+      const ids = new Set(favs.map((f) => f.stairs_id));
+      setFavoriteIds(ids);
+    } catch {
+      setFavoriteIds(new Set());
+    }
+  }, []);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -70,9 +84,42 @@ export default function StairsListPage() {
     }
   }, [cityFilter, debouncedNameKeyword, sortBy, toast]);
 
+  const handleToggleFavorite = async (stairsId: number) => {
+    setTogglingId(stairsId);
+    const isFav = favoriteIds.has(stairsId);
+    try {
+      if (isFav) {
+        await deleteFavorite(stairsId);
+        setFavoriteIds((prev) => {
+          const next = new Set(prev);
+          next.delete(stairsId);
+          return next;
+        });
+        toast({ title: "已取消收藏", status: "success", duration: 2000 });
+      } else {
+        await createFavorite(stairsId);
+        setFavoriteIds((prev) => {
+          const next = new Set(prev);
+          next.add(stairsId);
+          return next;
+        });
+        toast({ title: "收藏成功", status: "success", duration: 2000 });
+      }
+    } catch {
+      toast({
+        title: isFav ? "取消收藏失败" : "收藏失败",
+        status: "error",
+        duration: 3000,
+      });
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   useEffect(() => {
     loadData();
-  }, [loadData]);
+    loadFavorites();
+  }, [loadData, loadFavorites]);
 
   const handleNameSearch = (value: string) => {
     setNameKeyword(value);
@@ -173,15 +220,34 @@ export default function StairsListPage() {
                     </Badge>
                   </Td>
                   <Td>
-                    <Button
-                      as={RouterLink}
-                      to={`/stairs/${item.id}`}
-                      size="sm"
-                      variant="link"
-                      colorScheme="teal"
-                    >
-                      详情
-                    </Button>
+                    <HStack spacing={2}>
+                      <Tooltip label={favoriteIds.has(item.id) ? "取消收藏" : "收藏"}>
+                        <IconButton
+                          size="sm"
+                          variant="ghost"
+                          colorScheme={favoriteIds.has(item.id) ? "pink" : "gray"}
+                          aria-label={favoriteIds.has(item.id) ? "取消收藏" : "收藏"}
+                          isLoading={togglingId === item.id}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleToggleFavorite(item.id);
+                          }}
+                          fontSize="lg"
+                        >
+                          {favoriteIds.has(item.id) ? "♥" : "♡"}
+                        </IconButton>
+                      </Tooltip>
+                      <Button
+                        as={RouterLink}
+                        to={`/stairs/${item.id}`}
+                        size="sm"
+                        variant="link"
+                        colorScheme="teal"
+                      >
+                        详情
+                      </Button>
+                    </HStack>
                   </Td>
                 </Tr>
               ))}
