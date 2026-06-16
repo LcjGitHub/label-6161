@@ -21,20 +21,33 @@ def _row_to_dict(row: sqlite3.Row) -> dict:
     }
 
 
-def list_stairs(conn: sqlite3.Connection, city: str | None = None) -> list[dict]:
+def list_stairs(
+    conn: sqlite3.Connection,
+    city: str | None = None,
+    name_keyword: str | None = None,
+) -> list[dict]:
     """
-     * 查询台阶列表，可按城市筛选。
+     * 查询台阶列表，可按城市和名称关键字筛选。
      * @param {sqlite3.Connection} conn
      * @param {str | None} city
+     * @param {str | None} name_keyword
      * @returns {list[dict]}
      """
+    conditions: list[str] = []
+    params: list[str] = []
+
     if city:
-        rows = conn.execute(
-            "SELECT * FROM stairs WHERE city = ? ORDER BY id",
-            (city,),
-        ).fetchall()
-    else:
-        rows = conn.execute("SELECT * FROM stairs ORDER BY id").fetchall()
+        conditions.append("city = ?")
+        params.append(city)
+
+    if name_keyword:
+        conditions.append("name LIKE ?")
+        params.append(f"%{name_keyword}%")
+
+    where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+    sql = f"SELECT * FROM stairs{where_clause} ORDER BY id"
+
+    rows = conn.execute(sql, params).fetchall()
     return [_row_to_dict(r) for r in rows]
 
 

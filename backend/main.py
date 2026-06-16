@@ -31,10 +31,17 @@ app.add_middleware(
 
 
 @app.get("/api/stairs", response_model=list[StairsOut])
-def read_stairs(city: str | None = Query(default=None, description="按城市筛选")):
+def read_stairs(
+    city: str | None = Query(default=None, description="按城市筛选"),
+    name_keyword: str | None = Query(default=None, description="按名称关键字模糊匹配"),
+):
     """获取台阶列表。"""
     with get_connection() as conn:
-        return crud.list_stairs(conn, city=city or None)
+        return crud.list_stairs(
+            conn,
+            city=city or None,
+            name_keyword=name_keyword or None,
+        )
 
 
 @app.get("/api/cities", response_model=list[str])

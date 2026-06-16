@@ -5,6 +5,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  Input,
   Select,
   Spinner,
   Table,
@@ -42,13 +43,14 @@ export default function StairsListPage() {
   const [stairs, setStairs] = useState<Stairs[]>([]);
   const [cities, setCities] = useState<string[]>([]);
   const [cityFilter, setCityFilter] = useState("");
+  const [nameKeyword, setNameKeyword] = useState("");
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [list, cityList] = await Promise.all([
-        fetchStairs(cityFilter || undefined),
+        fetchStairs(cityFilter || undefined, nameKeyword || undefined),
         fetchCities(),
       ]);
       setStairs(list);
@@ -63,16 +65,20 @@ export default function StairsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [cityFilter, toast]);
+  }, [cityFilter, nameKeyword, toast]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  const handleNameSearch = (value: string) => {
+    setNameKeyword(value);
+  };
+
   return (
     <Box>
-      <HStack justify="space-between" mb={6} flexWrap="wrap" gap={4}>
-        <FormControl maxW="240px">
+      <HStack mb={6} flexWrap="wrap" gap={4} align="flex-end">
+        <FormControl maxW="240px" flex="1 1 200px">
           <FormLabel>城市筛选</FormLabel>
           <Select
             placeholder="全部城市"
@@ -86,7 +92,15 @@ export default function StairsListPage() {
             ))}
           </Select>
         </FormControl>
-        <Button colorScheme="teal" onClick={onOpen} alignSelf="flex-end">
+        <FormControl maxW="320px" flex="1 1 240px">
+          <FormLabel>名称搜索</FormLabel>
+          <Input
+            placeholder="请输入名称关键字"
+            value={nameKeyword}
+            onChange={(e) => handleNameSearch(e.target.value)}
+          />
+        </FormControl>
+        <Button colorScheme="teal" onClick={onOpen} flexShrink={0}>
           新增打卡点
         </Button>
       </HStack>

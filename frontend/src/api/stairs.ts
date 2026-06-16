@@ -6,11 +6,14 @@ const api = axios.create({
 });
 
 /**
- * 获取台阶列表，可选城市筛选
+ * 获取台阶列表，可选城市筛选和名称关键字搜索
  * @param city - 城市名称
+ * @param nameKeyword - 名称关键字
  */
-export async function fetchStairs(city?: string): Promise<Stairs[]> {
-  const params = city ? { city } : {};
+export async function fetchStairs(city?: string, nameKeyword?: string): Promise<Stairs[]> {
+  const params: Record<string, string> = {};
+  if (city) params.city = city;
+  if (nameKeyword) params.name_keyword = nameKeyword;
   const { data } = await api.get<Stairs[]>("/stairs", { params });
   return data;
 }
