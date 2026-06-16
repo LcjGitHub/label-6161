@@ -34,6 +34,7 @@ app.add_middleware(
 def read_stairs(
     city: str | None = Query(default=None, description="按城市筛选"),
     name_keyword: str | None = Query(default=None, description="按名称关键字模糊匹配"),
+    sort_by: str | None = Query(default=None, description="排序方式：step_count_asc / step_count_desc"),
 ):
     """获取台阶列表。"""
     with get_connection() as conn:
@@ -41,6 +42,7 @@ def read_stairs(
             conn,
             city=city or None,
             name_keyword=name_keyword or None,
+            sort_by=sort_by or None,
         )
 
 

@@ -10,10 +10,11 @@ const api = axios.create({
  * @param city - 城市名称
  * @param nameKeyword - 名称关键字
  */
-export async function fetchStairs(city?: string, nameKeyword?: string): Promise<Stairs[]> {
+export async function fetchStairs(city?: string, nameKeyword?: string, sortBy?: string): Promise<Stairs[]> {
   const params: Record<string, string> = {};
   if (city) params.city = city;
   if (nameKeyword) params.name_keyword = nameKeyword;
+  if (sortBy) params.sort_by = sortBy;
   const { data } = await api.get<Stairs[]>("/stairs", { params });
   return data;
 }

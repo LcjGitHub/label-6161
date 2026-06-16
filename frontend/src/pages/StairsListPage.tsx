@@ -18,7 +18,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { fetchCities, fetchStairs } from "../api/stairs";
 import type { Stairs } from "../types/stairs";
@@ -44,13 +44,16 @@ export default function StairsListPage() {
   const [cities, setCities] = useState<string[]>([]);
   const [cityFilter, setCityFilter] = useState("");
   const [nameKeyword, setNameKeyword] = useState("");
+  const [debouncedNameKeyword, setDebouncedNameKeyword] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [loading, setLoading] = useState(true);
+  const debounceTimerRef = useRef<number | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [list, cityList] = await Promise.all([
-        fetchStairs(cityFilter || undefined, nameKeyword || undefined),
+        fetchStairs(cityFilter || undefined, debouncedNameKeyword || undefined, sortBy || undefined),
         fetchCities(),
       ]);
       setStairs(list);
@@ -65,7 +68,7 @@ export default function StairsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [cityFilter, nameKeyword, toast]);
+  }, [cityFilter, debouncedNameKeyword, sortBy, toast]);
 
   useEffect(() => {
     loadData();
@@ -73,7 +76,15 @@ export default function StairsListPage() {
 
   const handleNameSearch = (value: string) => {
     setNameKeyword(value);
+    if (debounceTimerRef.current) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      setDebouncedNameKeyword(value);
+    }, 300);
   };
+
+  const hasFilter = cityFilter || debouncedNameKeyword || sortBy;
 
   return (
     <Box>
@@ -90,6 +101,17 @@ export default function StairsListPage() {
                 {city}
               </option>
             ))}
+          </Select>
+        </FormControl>
+        <FormControl maxW="240px" flex="1 1 200px">
+          <FormLabel>级数排序</FormLabel>
+          <Select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="">默认顺序</option>
+            <option value="step_count_asc">级数从少到多</option>
+            <option value="step_count_desc">级数从多到少</option>
           </Select>
         </FormControl>
         <FormControl maxW="320px" flex="1 1 240px">
@@ -110,7 +132,9 @@ export default function StairsListPage() {
           <Spinner color="teal.500" />
         </HStack>
       ) : stairs.length === 0 ? (
-        <Text color="gray.500">暂无数据，点击「新增打卡点」添加。</Text>
+        <Text color="gray.500">
+          {hasFilter ? "未找到匹配的台阶" : "暂无数据，点击「新增打卡点」添加。"}
+        </Text>
       ) : (
         <Box overflowX="auto" bg="white" borderRadius="md" shadow="sm">
           <Table size="md">

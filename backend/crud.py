@@ -25,12 +25,14 @@ def list_stairs(
     conn: sqlite3.Connection,
     city: str | None = None,
     name_keyword: str | None = None,
+    sort_by: str | None = None,
 ) -> list[dict]:
     """
-     * 查询台阶列表，可按城市和名称关键字筛选。
+     * 查询台阶列表，可按城市和名称关键字筛选，可按级数排序。
      * @param {sqlite3.Connection} conn
      * @param {str | None} city
      * @param {str | None} name_keyword
+     * @param {str | None} sort_by - "step_count_asc" | "step_count_desc" | None
      * @returns {list[dict]}
      """
     conditions: list[str] = []
@@ -45,7 +47,14 @@ def list_stairs(
         params.append(f"%{name_keyword}%")
 
     where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
-    sql = f"SELECT * FROM stairs{where_clause} ORDER BY id"
+
+    order_clause = "id"
+    if sort_by == "step_count_asc":
+        order_clause = "step_count ASC, id"
+    elif sort_by == "step_count_desc":
+        order_clause = "step_count DESC, id"
+
+    sql = f"SELECT * FROM stairs{where_clause} ORDER BY {order_clause}"
 
     rows = conn.execute(sql, params).fetchall()
     return [_row_to_dict(r) for r in rows]
