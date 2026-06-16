@@ -102,8 +102,9 @@ def update_stairs(
 
 
 def delete_stairs(conn: sqlite3.Connection, stairs_id: int) -> bool:
-    """删除台阶打卡点及其下全部打卡记录。"""
+    """删除台阶打卡点及其下全部打卡记录与收藏记录。"""
     conn.execute("DELETE FROM checkins WHERE stairs_id = ?", (stairs_id,))
+    conn.execute("DELETE FROM favorites WHERE stairs_id = ?", (stairs_id,))
     cursor = conn.execute("DELETE FROM stairs WHERE id = ?", (stairs_id,))
     conn.commit()
     return cursor.rowcount > 0
@@ -235,9 +236,9 @@ def get_favorite_by_stairs_id(conn: sqlite3.Connection, stairs_id: int) -> dict 
 
 def create_favorite(conn: sqlite3.Connection, data: FavoriteCreate) -> dict:
     """新增一条收藏记录。"""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    favorite_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    favorite_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor = conn.execute(
         """
         INSERT INTO favorites (stairs_id, favorite_time)

@@ -59,6 +59,9 @@ cd frontend && npm install && npm run dev
 | PUT | `/api/stairs/{id}` | 更新 |
 | DELETE | `/api/stairs/{id}` | 删除 |
 | GET | `/api/stats` | 数据统计概览 |
+| GET | `/api/favorites` | 收藏列表（含台阶详情） |
+| POST | `/api/favorites` | 添加收藏 |
+| DELETE | `/api/favorites/{stairs_id}` | 取消收藏 |
 
 **统计接口返回值示例**（`GET /api/stats`）：
 
