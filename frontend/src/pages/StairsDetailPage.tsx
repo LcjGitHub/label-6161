@@ -62,6 +62,7 @@ export default function StairsDetailPage() {
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [checkinSummary, setCheckinSummary] = useState<CheckinSummary | null>(null);
   const [checkinSummaryLoading, setCheckinSummaryLoading] = useState(false);
+  const [checkinSummaryError, setCheckinSummaryError] = useState(false);
 
   const formatDateTime = (raw: string): string => {
     if (!raw) return raw;
@@ -123,10 +124,13 @@ export default function StairsDetailPage() {
   const loadCheckinSummary = useCallback(async () => {
     if (!id) return;
     setCheckinSummaryLoading(true);
+    setCheckinSummaryError(false);
     try {
       const data = await fetchCheckinSummary(Number(id));
       setCheckinSummary(data);
     } catch {
+      setCheckinSummaryError(true);
+      setCheckinSummary(null);
       toast({
         title: "加载打卡摘要失败",
         status: "error",
@@ -262,6 +266,19 @@ export default function StairsDetailPage() {
           <Spinner size="sm" color="teal.500" />
           <Text fontSize="sm" color="gray.500">加载打卡摘要…</Text>
         </HStack>
+      ) : checkinSummaryError ? (
+        <Box bg="red.50" borderRadius="md" p={4} mb={6} textAlign="center" border="1px" borderColor="red.200">
+          <Text color="red.600" fontSize="sm">打卡摘要加载失败，请稍后重试</Text>
+          <Button
+            mt={2}
+            size="xs"
+            colorScheme="red"
+            variant="outline"
+            onClick={loadCheckinSummary}
+          >
+            重新加载
+          </Button>
+        </Box>
       ) : checkinSummary && checkinSummary.total_checkins > 0 ? (
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} mb={6}>
           <Card bg="teal.50" border="1px" borderColor="teal.200">
