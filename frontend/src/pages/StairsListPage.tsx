@@ -46,6 +46,7 @@ export default function StairsListPage() {
   const [cityFilter, setCityFilter] = useState("");
   const [nameKeyword, setNameKeyword] = useState("");
   const [debouncedNameKeyword, setDebouncedNameKeyword] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [loading, setLoading] = useState(true);
   const debounceTimerRef = useRef<number | null>(null);
@@ -55,7 +56,7 @@ export default function StairsListPage() {
     setLoading(true);
     try {
       const [list, cityList] = await Promise.all([
-        fetchStairs(cityFilter || undefined, debouncedNameKeyword || undefined, sortBy || undefined),
+        fetchStairs(cityFilter || undefined, debouncedNameKeyword || undefined, difficultyFilter || undefined, sortBy || undefined),
         fetchCities(),
       ]);
       setStairs(list);
@@ -70,7 +71,7 @@ export default function StairsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [cityFilter, debouncedNameKeyword, sortBy, toast]);
+  }, [cityFilter, debouncedNameKeyword, difficultyFilter, sortBy, toast]);
 
   useEffect(() => {
     loadData();
@@ -90,7 +91,7 @@ export default function StairsListPage() {
     }, 300);
   };
 
-  const hasFilter = cityFilter || debouncedNameKeyword;
+  const hasFilter = cityFilter || debouncedNameKeyword || difficultyFilter;
 
   const handleToggleFavorite = (e: React.MouseEvent, stairsId: number) => {
     e.preventDefault();
@@ -113,6 +114,18 @@ export default function StairsListPage() {
                 {city}
               </option>
             ))}
+          </Select>
+        </FormControl>
+        <FormControl maxW="240px" flex="1 1 200px">
+          <FormLabel>难度筛选</FormLabel>
+          <Select
+            placeholder="全部难度"
+            value={difficultyFilter}
+            onChange={(e) => setDifficultyFilter(e.target.value)}
+          >
+            <option value="简单">简单</option>
+            <option value="中等">中等</option>
+            <option value="困难">困难</option>
           </Select>
         </FormControl>
         <FormControl maxW="240px" flex="1 1 200px">

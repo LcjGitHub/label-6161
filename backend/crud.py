@@ -25,13 +25,15 @@ def list_stairs(
     conn: sqlite3.Connection,
     city: str | None = None,
     name_keyword: str | None = None,
+    difficulty: str | None = None,
     sort_by: str | None = None,
 ) -> list[dict]:
     """
-     * 查询台阶列表，可按城市和名称关键字筛选，可按级数排序。
+     * 查询台阶列表，可按城市、名称关键字和难度筛选，可按级数排序。
      * @param {sqlite3.Connection} conn
      * @param {str | None} city
      * @param {str | None} name_keyword
+     * @param {str | None} difficulty
      * @param {str | None} sort_by - "step_count_asc" | "step_count_desc" | None
      * @returns {list[dict]}
      """
@@ -45,6 +47,10 @@ def list_stairs(
     if name_keyword:
         conditions.append("name LIKE ?")
         params.append(f"%{name_keyword}%")
+
+    if difficulty:
+        conditions.append("difficulty = ?")
+        params.append(difficulty)
 
     where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
 
